@@ -18,4 +18,12 @@ public interface ReadingCardService {
     ReadingCard renewReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException;
 
     ReadingCard cancelReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException;
+
+    Page<ReadingCard> getAllReadingCards(ReadingCardRequestDTO dto, PagingRequestDTO pagingRequestDTO);
+
+    ReadingCard getReadingCardById(Long id) throws NotFoundException;
+
+    ReadingCard warnReadingCard(Long id) throws NotFoundException;
+
+    ReadingCard toggleReadingCardStatus(Long id) throws NotFoundException;
 }

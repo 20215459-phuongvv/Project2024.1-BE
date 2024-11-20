@@ -7,6 +7,8 @@ import com.hust.project3.exceptions.BadRequestException;
 import com.hust.project3.exceptions.NotFoundException;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
+
 public interface SettingService {
     Page<Setting> getSettingsByProperties(SettingRequestDTO dto, PagingRequestDTO pagingRequestDTO);
 
@@ -19,4 +21,6 @@ public interface SettingService {
     Setting updateNormalUserLimit(String jwt, SettingRequestDTO dto) throws NotFoundException;
 
     Setting updateVipUserLimit(String jwt, SettingRequestDTO dto) throws NotFoundException;
+
+    Setting getUserSettings(String jwt) throws NotFoundException;
 }

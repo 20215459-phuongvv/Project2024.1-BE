@@ -4,5 +4,7 @@ public enum ReadingCardStatusEnum {
     PENDING,
     ACTIVATED,
     DEACTIVATED,
-    EXPIRED
+    EXPIRED,
+    WARNED,
+    BANNED
 }

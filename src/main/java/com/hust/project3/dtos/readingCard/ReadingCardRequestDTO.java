@@ -8,6 +8,7 @@ import java.time.LocalDate;
 public class ReadingCardRequestDTO {
     private Long id;
     private Long userId;
+    private String email;
     private String code;
     private Integer type;
     private Integer numberOfPeriod;

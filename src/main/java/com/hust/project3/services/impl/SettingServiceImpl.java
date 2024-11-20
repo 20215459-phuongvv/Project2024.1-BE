@@ -3,10 +3,13 @@ package com.hust.project3.services.impl;
 import com.hust.project3.dtos.PagingRequestDTO;
 import com.hust.project3.dtos.setting.SettingRequestDTO;
 import com.hust.project3.entities.Setting;
+import com.hust.project3.entities.User;
+import com.hust.project3.enums.RoleEnum;
 import com.hust.project3.enums.SettingKeyEnum;
 import com.hust.project3.exceptions.BadRequestException;
 import com.hust.project3.exceptions.NotFoundException;
 import com.hust.project3.repositories.SettingRepository;
+import com.hust.project3.repositories.UserRepository;
 import com.hust.project3.security.JwtTokenProvider;
 import com.hust.project3.services.SettingService;
 import com.hust.project3.specification.SettingSpecification;
@@ -17,6 +20,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -24,6 +29,7 @@ import java.util.Optional;
 public class SettingServiceImpl implements SettingService {
     private final SettingRepository settingRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
     @Override
     public Page<Setting> getSettingsByProperties(SettingRequestDTO dto, PagingRequestDTO pagingRequestDTO) {
         Pageable pageable = PageRequest.of(pagingRequestDTO.getPage(), pagingRequestDTO.getSize());
@@ -85,5 +91,19 @@ public class SettingServiceImpl implements SettingService {
         setting.setValue(dto.getValue());
         setting.setUpdatedBy(jwtTokenProvider.getEmailFromJwtToken(jwt));
         return settingRepository.save(setting);
+    }
+
+    @Override
+    public Setting getUserSettings(String jwt) throws NotFoundException {
+        User user = userRepository.findByEmail(jwtTokenProvider.getEmailFromJwtToken(jwt))
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        if (Objects.equals(user.getRole(), RoleEnum.USER.name())) {
+            return settingRepository.findByKey(SettingKeyEnum.NORMAL_USER_LIMIT.name())
+                    .orElseThrow(() -> new NotFoundException("Setting not found"));
+        } else if (Objects.equals(user.getRole(), RoleEnum.VIP_USER.name())) {
+            return settingRepository.findByKey(SettingKeyEnum.VIP_USER_LIMIT.name())
+                    .orElseThrow(() -> new NotFoundException("Setting not found"));
+        }
+        return null;
     }
 }

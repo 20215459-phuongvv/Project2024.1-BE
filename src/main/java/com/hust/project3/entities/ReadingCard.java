@@ -9,6 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -28,6 +29,9 @@ public class ReadingCard {
     @Column(name = "type")
     private Integer type;
 
+    @Column(name = "violation_count")
+    private Integer violationCount;
+
     @Column(name = "start_date")
     private LocalDate startDate;
 
@@ -36,6 +40,9 @@ public class ReadingCard {
 
     @Column(name = "status")
     private Integer status;
+
+    @OneToMany(mappedBy = "readingCard", fetch = FetchType.LAZY)
+    private List<BorrowBook> borrowBookList;
 
     @UpdateTimestamp
     @Column(name = "updated_at")

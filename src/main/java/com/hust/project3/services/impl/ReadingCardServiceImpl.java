@@ -31,6 +31,7 @@ public class ReadingCardServiceImpl implements ReadingCardService {
     private final ReadingCardRepository readingCardRepository;
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
+
     @Override
     public Page<ReadingCard> getReadingCardByUser(String jwt, ReadingCardRequestDTO dto, PagingRequestDTO pagingRequestDTO) throws NotFoundException {
         Pageable pageable = PageRequest.of(pagingRequestDTO.getPage(), pagingRequestDTO.getSize());
@@ -106,6 +107,42 @@ public class ReadingCardServiceImpl implements ReadingCardService {
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("Reading card not found!"));
         readingCard.setStatus(ReadingCardStatusEnum.DEACTIVATED.ordinal());
+        return readingCardRepository.save(readingCard);
+    }
+
+    @Override
+    public Page<ReadingCard> getAllReadingCards(ReadingCardRequestDTO dto, PagingRequestDTO pagingRequestDTO) {
+        Specification<ReadingCard> spec = ReadingCardSpecification.byCriteria(dto);
+        return readingCardRepository.findAll(spec, PageRequest.of(pagingRequestDTO.getPage(), pagingRequestDTO.getSize()));
+    }
+
+    @Override
+    public ReadingCard getReadingCardById(Long id) throws NotFoundException {
+        return readingCardRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Reading card not found with id: " + id));
+    }
+
+    @Override
+    public ReadingCard warnReadingCard(Long id) throws NotFoundException {
+        ReadingCard readingCard = getReadingCardById(id);
+        readingCard.setViolationCount(readingCard.getViolationCount() + 1);
+        if (readingCard.getViolationCount() >= 3) {
+            readingCard.setStatus(ReadingCardStatusEnum.BANNED.ordinal());
+        } else {
+            readingCard.setStatus(ReadingCardStatusEnum.WARNED.ordinal());
+        }
+        readingCardRepository.save(readingCard);
+        return readingCardRepository.save(readingCard);
+    }
+
+    @Override
+    public ReadingCard toggleReadingCardStatus(Long id) throws NotFoundException {
+        ReadingCard readingCard = getReadingCardById(id);
+        if (readingCard.getStatus() == ReadingCardStatusEnum.BANNED.ordinal()) {
+            readingCard.setStatus(ReadingCardStatusEnum.ACTIVATED.ordinal());
+        } else {
+            readingCard.setStatus(ReadingCardStatusEnum.BANNED.ordinal());
+        }
         return readingCardRepository.save(readingCard);
     }
 }

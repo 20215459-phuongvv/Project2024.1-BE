@@ -13,7 +13,10 @@ import com.hust.project3.repositories.BookRepository;
 import com.hust.project3.repositories.PublisherRepository;
 import com.hust.project3.security.JwtTokenProvider;
 import com.hust.project3.services.BookService;
+import com.hust.project3.services.NotificationService;
+import com.hust.project3.services.NotificationSubscriptionService;
 import com.hust.project3.specification.BookSpecification;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +34,7 @@ public class BookServiceImpl implements BookService {
     private final AuthorRepository authorRepository;
     private final PublisherRepository publisherRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final NotificationService notificationService;
 
     @Override
     public Page<Book> getBooksByProperties(BookRequestDTO dto, PagingRequestDTO pagingRequestDTO) {
@@ -65,7 +69,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Book updateBook(String jwt, BookRequestDTO dto) throws NotFoundException {
+    public Book updateBook(String jwt, BookRequestDTO dto) throws NotFoundException, MessagingException {
         Book book = bookRepository.findById(dto.getId())
                 .orElseThrow(() -> new NotFoundException("Book not found"));
         Author author = authorRepository.findById(dto.getAuthorId())
@@ -73,6 +77,9 @@ public class BookServiceImpl implements BookService {
         Publisher publisher = publisherRepository.findById(dto.getPublisherId())
                 .orElseThrow(() -> new NotFoundException("Publisher not found"));
         book.setTitle(dto.getTitle());
+        if (!book.getIsAvailable() && dto.getIsAvailable()) {
+            notificationService.notifySubscribers(book);
+        }
         book.setIsAvailable(dto.getIsAvailable());
         book.setUpdatedBy(jwtTokenProvider.getEmailFromJwtToken(jwt));
         book.setAuthor(author);

@@ -1,5 +1,6 @@
 package com.hust.project3.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,6 +25,7 @@ public class BorrowBook {
 
     @ManyToOne
     @JoinColumn(name = "reading_card_id")
+    @JsonIgnore
     private ReadingCard readingCard;
 
     @ManyToOne
@@ -38,6 +40,9 @@ public class BorrowBook {
 
     @Column(name = "is_late")
     private Boolean isLate;
+
+    @Column(name = "over_due_days")
+    private Long overDueDays;
 
     @UpdateTimestamp
     @Column(name = "updatedAt")

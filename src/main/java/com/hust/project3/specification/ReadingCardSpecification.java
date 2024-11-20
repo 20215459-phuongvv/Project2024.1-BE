@@ -39,5 +39,33 @@ public class ReadingCardSpecification {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
+
+    public static Specification<ReadingCard> byCriteria(ReadingCardRequestDTO dto) {
+        return (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (dto.getCode() != null && !dto.getCode().isEmpty()) {
+                predicates.add(criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("code")),
+                        "%" + dto.getCode().toLowerCase() + "%"
+                ));
+            }
+
+            if (dto.getEmail() != null && !dto.getEmail().isEmpty()) {
+                predicates.add(criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("user").get("email")),
+                        "%" + dto.getCode().toLowerCase() + "%"
+                ));
+            }
+
+            if (dto.getStatus() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("status"), dto.getStatus()));
+            }
+
+
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+    }
 }
 

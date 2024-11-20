@@ -7,6 +7,7 @@ import com.hust.project3.dtos.book.BookRequestDTO;
 import com.hust.project3.entities.Book;
 import com.hust.project3.exceptions.NotFoundException;
 import com.hust.project3.services.BookService;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -41,7 +42,7 @@ public class AdminBookController {
 
     @PutMapping
     public Result updateBook(@RequestHeader("Authorization") String jwt,
-                             @RequestBody @Valid BookRequestDTO dto) throws NotFoundException {
+                             @RequestBody @Valid BookRequestDTO dto) throws NotFoundException, MessagingException {
         return Result.ok(bookService.updateBook(jwt, dto));
     }
 
