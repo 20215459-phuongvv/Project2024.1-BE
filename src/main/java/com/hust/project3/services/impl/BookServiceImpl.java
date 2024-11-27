@@ -105,7 +105,7 @@ public class BookServiceImpl implements BookService {
     public List<Book> deleteBooks(String jwt, List<Long> idList) throws NotFoundException {
         List<Book> result = new ArrayList<>();
         for (long id : idList) {
-            Book book = getBookById(id);
+            Book book = getVipBookById(id);
             book.setStatus(EntityStatusEnum.INACTIVE.ordinal());
             book.setUpdatedBy(jwtTokenProvider.getEmailFromJwtToken(jwt));
             result.add(bookRepository.save(book));
