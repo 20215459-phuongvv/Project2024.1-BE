@@ -16,7 +16,6 @@ import com.hust.project3.repositories.BorrowBookRepository;
 import com.hust.project3.repositories.ReadingCardRepository;
 import com.hust.project3.repositories.UserRepository;
 import com.hust.project3.security.JwtTokenProvider;
-import com.hust.project3.services.BookService;
 import com.hust.project3.services.BorrowBookService;
 import com.hust.project3.services.NotificationService;
 import com.hust.project3.specification.BorrowBookSpecification;
@@ -43,21 +42,22 @@ public class BorrowBookServiceImpl implements BorrowBookService {
     private final NotificationService notificationService;
 
     @Override
-    public Page<BorrowBook> getBorrowingsByUserLogin(String jwt, BorrowBookRequestDTO dto, PagingRequestDTO pagingRequestDTO) {
+    public Page<BorrowBook> getBorrowingsByUserLogin(String jwt, BorrowBookRequestDTO dto, PagingRequestDTO pagingRequestDTO) throws NotFoundException {
         Pageable pageable = PageRequest.of(pagingRequestDTO.getPage(), pagingRequestDTO.getSize());
         String email = jwtTokenProvider.getEmailFromJwtToken(jwt);
         User user = userRepository.findByEmail(email).get();
-        List<ReadingCard> readingCardList = user.getReadingCardList();
-        return borrowBookRepository.findByReadingCardIn(readingCardList, pageable);
+        ReadingCard readingCard = readingCardRepository.findByUserAndId(user, dto.getReadingCardId())
+                .orElseThrow(() -> new NotFoundException("Reading card not found"));
+        return borrowBookRepository.findByReadingCard(readingCard, pageable);
     }
 
     @Override
     public BorrowBook getUserBorrowingById(String jwt, Long id) {
         String email = jwtTokenProvider.getEmailFromJwtToken(jwt);
         User user = userRepository.findByEmail(email).get();
-        List<ReadingCard> readingCardList = user.getReadingCardList();
+        ReadingCard readingCard = user.getReadingCard();
         BorrowBook borrowBook = borrowBookRepository.findById(id).orElse(null);
-        if (borrowBook != null && readingCardList.contains(borrowBook.getReadingCard())) {
+        if (borrowBook != null && Objects.equals(readingCard.getId(), borrowBook.getReadingCard().getId())) {
             return borrowBook;
         }
         return null;
@@ -67,14 +67,9 @@ public class BorrowBookServiceImpl implements BorrowBookService {
     public BorrowBook addBorrowBook(String jwt, BorrowBookRequestDTO dto) throws NotFoundException, BadRequestException {
         String email = jwtTokenProvider.getEmailFromJwtToken(jwt);
         User user = userRepository.findByEmail(email).get();
-        List<ReadingCard> readingCardList = user.getReadingCardList();
-        ReadingCard readingCard = readingCardList
-                .stream()
-                .filter(card -> Objects.equals(card.getId(), dto.getReadingCardId()))
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("Reading card not found"));
+        ReadingCard readingCard = user.getReadingCard();
         if (readingCard.getStatus() == ReadingCardStatusEnum.BANNED.ordinal()) {
-            throw new BadRequestException("This card is banned, use another card");
+            throw new BadRequestException("This card is banned, contact admin");
         }
         if (Objects.equals(user.getRole(), RoleEnum.USER.name())) {
             if (dto.getNumberOfDays() > 45) throw new BadRequestException("Cannot borrow books for more than 45 days");

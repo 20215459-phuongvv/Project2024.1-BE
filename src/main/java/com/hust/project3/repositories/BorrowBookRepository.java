@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.util.List;
 
 public interface BorrowBookRepository extends JpaRepository<BorrowBook, Long>, JpaSpecificationExecutor<BorrowBook> {
-    Page<BorrowBook> findByReadingCardIn(List<ReadingCard> readingCardList, Pageable pageable);
+    Page<BorrowBook> findByReadingCard(ReadingCard readingCard, Pageable pageable);
 
     List<BorrowBook> findAllByStatus(int ordinal);
 }

@@ -24,7 +24,7 @@ public class BorrowBookController {
     @GetMapping
     public Result getBorrowingsByUserLogin(@RequestHeader("Authorization") String jwt,
                                            BorrowBookRequestDTO dto,
-                                           PagingRequestDTO pagingRequestDTO) {
+                                           PagingRequestDTO pagingRequestDTO) throws NotFoundException {
         Page<BorrowBook> page = borrowBookService.getBorrowingsByUserLogin(jwt, dto, pagingRequestDTO);
         return Result.ok(page.getContent(), ResultMeta.of(page));
     }

@@ -51,7 +51,7 @@ public class ReadingCard {
     @Column(name = "updated_by")
     private String updatedBy;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @OneToOne
+    @JoinColumn(name = "user_id", unique = true)
     private User user;
 }

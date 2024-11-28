@@ -9,7 +9,7 @@ import jakarta.mail.MessagingException;
 import org.springframework.data.domain.Page;
 
 public interface BorrowBookService {
-    Page<BorrowBook> getBorrowingsByUserLogin(String jwt, BorrowBookRequestDTO dto, PagingRequestDTO pagingRequestDTO);
+    Page<BorrowBook> getBorrowingsByUserLogin(String jwt, BorrowBookRequestDTO dto, PagingRequestDTO pagingRequestDTO) throws NotFoundException;
 
     BorrowBook getUserBorrowingById(String jwt, Long id);
 

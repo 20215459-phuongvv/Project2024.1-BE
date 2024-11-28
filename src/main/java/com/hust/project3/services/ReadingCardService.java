@@ -7,9 +7,7 @@ import com.hust.project3.exceptions.NotFoundException;
 import org.springframework.data.domain.Page;
 
 public interface ReadingCardService {
-    Page<ReadingCard> getReadingCardByUser(String jwt, ReadingCardRequestDTO dto, PagingRequestDTO pagingRequestDTO) throws NotFoundException;
-
-    ReadingCard getUserReadingCardById(String jwt, Long id) throws NotFoundException;
+    ReadingCard getReadingCardByUser(String jwt) throws NotFoundException;
 
     ReadingCard addReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException;
 

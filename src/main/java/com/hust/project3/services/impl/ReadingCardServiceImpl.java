@@ -15,14 +15,11 @@ import com.hust.project3.specification.ReadingCardSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -33,25 +30,11 @@ public class ReadingCardServiceImpl implements ReadingCardService {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Override
-    public Page<ReadingCard> getReadingCardByUser(String jwt, ReadingCardRequestDTO dto, PagingRequestDTO pagingRequestDTO) throws NotFoundException {
-        Pageable pageable = PageRequest.of(pagingRequestDTO.getPage(), pagingRequestDTO.getSize());
+    public ReadingCard getReadingCardByUser(String jwt) throws NotFoundException {
         String email = jwtTokenProvider.getEmailFromJwtToken(jwt);
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found!"));
-        Specification<ReadingCard> spec = ReadingCardSpecification.byCriteria(dto, user);
-        return readingCardRepository.findAll(spec, pageable);
-    }
-
-    @Override
-    public ReadingCard getUserReadingCardById(String jwt, Long id) throws NotFoundException {
-        String email = jwtTokenProvider.getEmailFromJwtToken(jwt);
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("User not found!"));
-        List<ReadingCard> readingCardList = user.getReadingCardList();
-        return readingCardList.stream()
-                .filter(readingCard -> Objects.equals(readingCard.getId(), id))
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("Reading card not found!"));
+        return user.getReadingCard();
     }
 
     @Override
@@ -80,15 +63,7 @@ public class ReadingCardServiceImpl implements ReadingCardService {
 
     @Override
     public ReadingCard renewReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException {
-        String email = jwtTokenProvider.getEmailFromJwtToken(jwt);
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("User not found!"));
-        List<ReadingCard> readingCardList = user.getReadingCardList();
-        ReadingCard readingCard = readingCardList.stream()
-                .filter(card -> Objects.equals(card.getId(), dto.getId()))
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("Reading card not found!"));
-
+        ReadingCard readingCard = getReadingCardByUser(jwt);
         if (readingCard.getType() == ReadingCardTypeEnum.MONTHLY.ordinal()) {
             readingCard.setExpiryDate(readingCard.getExpiryDate().plusMonths(dto.getNumberOfPeriod()));
         } else if (readingCard.getType() == ReadingCardTypeEnum.YEARLY.ordinal()) {
@@ -99,14 +74,7 @@ public class ReadingCardServiceImpl implements ReadingCardService {
 
     @Override
     public ReadingCard cancelReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException {
-        String email = jwtTokenProvider.getEmailFromJwtToken(jwt);
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("User not found!"));
-        List<ReadingCard> readingCardList = user.getReadingCardList();
-        ReadingCard readingCard = readingCardList.stream()
-                .filter(card -> Objects.equals(card.getId(), dto.getId()))
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("Reading card not found!"));
+        ReadingCard readingCard = getReadingCardByUser(jwt);
         readingCard.setStatus(ReadingCardStatusEnum.DEACTIVATED.ordinal());
         return readingCardRepository.save(readingCard);
     }

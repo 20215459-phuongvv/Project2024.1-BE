@@ -54,7 +54,7 @@ public class User {
     @Column(name = "updatedBy")
     private String updatedBy;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties("user")
-    private List<ReadingCard> readingCardList;
+    private ReadingCard readingCard;
 }
