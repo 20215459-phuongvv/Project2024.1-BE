@@ -65,6 +65,7 @@ public class ReadingCardServiceImpl implements ReadingCardService {
                 .type(dto.getType())
                 .startDate(LocalDate.now())
                 .expiryDate(dto.getType() == ReadingCardTypeEnum.MONTHLY.ordinal() ? LocalDate.now().plusMonths(dto.getNumberOfPeriod()) : LocalDate.now().plusYears(dto.getNumberOfPeriod()))
+                .violationCount(0)
                 .status(ReadingCardStatusEnum.PENDING.ordinal())
                 .updatedBy(email)
                 .user(user)
