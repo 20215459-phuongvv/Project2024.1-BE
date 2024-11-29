@@ -48,7 +48,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .build();
     }
     @Override
-    public AuthResponseDTO createUser(UserRequestDTO dto) throws MessagingException {
+    public AuthResponseDTO createUser(UserRequestDTO dto) throws MessagingException, BadRequestException {
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new BadRequestException("Email already exists");
+        }
+        if (userRepository.existsByPhone(dto.getPhone())) {
+            throw new BadRequestException("Phone number already exists");
+        }
         User user =  User.builder()
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(dto.getPassword()))

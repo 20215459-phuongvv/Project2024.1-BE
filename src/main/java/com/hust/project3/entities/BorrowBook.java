@@ -1,6 +1,7 @@
 package com.hust.project3.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +26,7 @@ public class BorrowBook {
 
     @ManyToOne
     @JoinColumn(name = "reading_card_id")
-    @JsonIgnore
+    @JsonIgnoreProperties("borrowBookList")
     private ReadingCard readingCard;
 
     @ManyToOne

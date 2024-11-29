@@ -1,5 +1,7 @@
 package com.hust.project3.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,6 +44,7 @@ public class ReadingCard {
     private Integer status;
 
     @OneToMany(mappedBy = "readingCard", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<BorrowBook> borrowBookList;
 
     @UpdateTimestamp
@@ -53,5 +56,6 @@ public class ReadingCard {
 
     @OneToOne
     @JoinColumn(name = "user_id", unique = true)
+    @JsonIgnoreProperties("reading_card")
     private User user;
 }

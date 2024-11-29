@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +39,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Page<Book> getBooksByProperties(BookRequestDTO dto, PagingRequestDTO pagingRequestDTO) {
-        Pageable pageable = PageRequest.of(pagingRequestDTO.getPage(), pagingRequestDTO.getSize());
+        Pageable pageable = PageRequest.of(pagingRequestDTO.getPage(), pagingRequestDTO.getSize(), Sort.by("id").descending());
         dto.setIsVip(false);
         Specification<Book> spec = BookSpecification.byCriteria(dto);
         return bookRepository.findAll(spec, pageable);

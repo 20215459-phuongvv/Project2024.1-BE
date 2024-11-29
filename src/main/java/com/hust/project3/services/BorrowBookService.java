@@ -11,7 +11,7 @@ import org.springframework.data.domain.Page;
 public interface BorrowBookService {
     Page<BorrowBook> getBorrowingsByUserLogin(String jwt, BorrowBookRequestDTO dto, PagingRequestDTO pagingRequestDTO) throws NotFoundException;
 
-    BorrowBook getUserBorrowingById(String jwt, Long id);
+    BorrowBook getUserBorrowingById(String jwt, Long id) throws NotFoundException;
 
     BorrowBook addBorrowBook(String jwt, BorrowBookRequestDTO dto) throws NotFoundException, BadRequestException;
 
@@ -20,5 +20,6 @@ public interface BorrowBookService {
     Page<BorrowBook> getBorrowBooksByCriteria(BorrowBookRequestDTO dto, PagingRequestDTO pagingRequestDTO);
 
     BorrowBook getBorrowingById(Long id) throws NotFoundException;
+
     BorrowBook updateReturnedBorrowing(Long id) throws NotFoundException, MessagingException;
 }

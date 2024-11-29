@@ -36,7 +36,7 @@ public class BorrowBookController {
 
     @GetMapping("/{id}")
     public Result getBorrowingById(@RequestHeader("Authorization") String jwt,
-                                   @PathVariable("id") Long id) {
+                                   @PathVariable("id") Long id) throws NotFoundException {
         return Result.ok(borrowBookService.getUserBorrowingById(jwt, id));
     }
 

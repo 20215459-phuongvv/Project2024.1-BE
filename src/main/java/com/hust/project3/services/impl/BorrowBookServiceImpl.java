@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -43,16 +44,15 @@ public class BorrowBookServiceImpl implements BorrowBookService {
 
     @Override
     public Page<BorrowBook> getBorrowingsByUserLogin(String jwt, BorrowBookRequestDTO dto, PagingRequestDTO pagingRequestDTO) throws NotFoundException {
-        Pageable pageable = PageRequest.of(pagingRequestDTO.getPage(), pagingRequestDTO.getSize());
+        Pageable pageable = PageRequest.of(pagingRequestDTO.getPage(), pagingRequestDTO.getSize(), Sort.by("id").descending());
         String email = jwtTokenProvider.getEmailFromJwtToken(jwt);
         User user = userRepository.findByEmail(email).get();
-        ReadingCard readingCard = readingCardRepository.findByUserAndId(user, dto.getReadingCardId())
-                .orElseThrow(() -> new NotFoundException("Reading card not found"));
+        ReadingCard readingCard = user.getReadingCard();
         return borrowBookRepository.findByReadingCard(readingCard, pageable);
     }
 
     @Override
-    public BorrowBook getUserBorrowingById(String jwt, Long id) {
+    public BorrowBook getUserBorrowingById(String jwt, Long id) throws NotFoundException {
         String email = jwtTokenProvider.getEmailFromJwtToken(jwt);
         User user = userRepository.findByEmail(email).get();
         ReadingCard readingCard = user.getReadingCard();
@@ -60,7 +60,7 @@ public class BorrowBookServiceImpl implements BorrowBookService {
         if (borrowBook != null && Objects.equals(readingCard.getId(), borrowBook.getReadingCard().getId())) {
             return borrowBook;
         }
-        return null;
+        throw new NotFoundException("Borrow book not found");
     }
 
     @Override
@@ -104,7 +104,7 @@ public class BorrowBookServiceImpl implements BorrowBookService {
 
     @Override
     public Page<BorrowBook> getBorrowBooksByCriteria(BorrowBookRequestDTO dto, PagingRequestDTO pagingRequestDTO) {
-        Pageable pageable = PageRequest.of(pagingRequestDTO.getPage(), pagingRequestDTO.getSize());
+        Pageable pageable = PageRequest.of(pagingRequestDTO.getPage(), pagingRequestDTO.getSize(), Sort.by("id").descending());
         Specification<BorrowBook> spec = BorrowBookSpecification.byCriteria(dto);
         return borrowBookRepository.findAll(spec, pageable);
     }
