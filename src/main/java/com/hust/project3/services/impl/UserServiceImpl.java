@@ -1,7 +1,9 @@
 package com.hust.project3.services.impl;
 
+import com.hust.project3.dtos.PagingRequestDTO;
 import com.hust.project3.dtos.auth.AuthRequestDTO;
 import com.hust.project3.dtos.auth.AuthResponseDTO;
+import com.hust.project3.dtos.user.UserQueryRequestDTO;
 import com.hust.project3.dtos.user.UserRequestDTO;
 import com.hust.project3.entities.User;
 import com.hust.project3.enums.EntityStatusEnum;
@@ -12,9 +14,14 @@ import com.hust.project3.repositories.UserRepository;
 import com.hust.project3.security.JwtTokenProvider;
 import com.hust.project3.services.EmailService;
 import com.hust.project3.services.UserService;
+import com.hust.project3.specification.UserSpecification;
 import com.hust.project3.utils.Constants;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -47,6 +54,59 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .roles(user.getRole())
                 .build();
     }
+
+    @Override
+    public User findUserByJwt(String jwt) throws NotFoundException {
+        String email = jwtTokenProvider.getEmailFromJwtToken(jwt);
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    @Override
+    public User updateUserProfile(String jwt, UserRequestDTO dto) throws NotFoundException {
+        User user = findUserByJwt(jwt);
+        if (userRepository.existsByIdNotAndPhone(user.getId(), dto.getPhone())) {
+            throw new NotFoundException("Phone number already exists");
+        }
+        user.setName(dto.getName());
+        user.setPhone(dto.getPhone());
+        user.setAddress(dto.getAddress());
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User changePassword(String jwt, AuthRequestDTO dto) throws NotFoundException {
+        User user = findUserByJwt(jwt);
+        if(!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            throw new BadCredentialsException(messages.getString("password.validate.invalid"));
+        }
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        return userRepository.save(user);
+    }
+
+    @Override
+    public Page<User> getUsersByProperties(UserQueryRequestDTO dto, PagingRequestDTO pagingRequestDTO) {
+        Pageable pageable = PageRequest.of(pagingRequestDTO.getPage(), pagingRequestDTO.getSize());
+        Specification<User> specs = Specification
+                .where(UserSpecification.hasKeyword(dto.getKeyword()))
+                .and(UserSpecification.hasStatus(dto.getStatus()));
+        return userRepository.findAll(specs, pageable);
+    }
+
+    @Override
+    public User getUserById(Long id) throws NotFoundException {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    @Override
+    public User updateUser(String jwt, UserRequestDTO dto) throws NotFoundException {
+        User user = getUserById(dto.getId());
+        user.setStatus(dto.getStatus());
+        user.setName(dto.getName());
+        return userRepository.save(user);
+    }
+
     @Override
     public AuthResponseDTO createUser(UserRequestDTO dto) throws MessagingException, BadRequestException {
         if (userRepository.existsByEmail(dto.getEmail())) {
