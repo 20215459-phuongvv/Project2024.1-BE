@@ -36,6 +36,7 @@ import org.thymeleaf.context.Context;
 import java.util.UUID;
 
 import static com.hust.project3.utils.Constants.messages;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService, UserDetailsService {
@@ -77,7 +78,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public User changePassword(String jwt, AuthRequestDTO dto) throws NotFoundException {
         User user = findUserByJwt(jwt);
-        if(!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new BadCredentialsException(messages.getString("password.validate.invalid"));
         }
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
@@ -115,7 +116,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         if (userRepository.existsByPhone(dto.getPhone())) {
             throw new BadRequestException("Phone number already exists");
         }
-        User user =  User.builder()
+        User user = User.builder()
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .role(RoleEnum.USER.toString())
@@ -129,32 +130,55 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword());
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
         Context context = new Context();
         String url = Constants.LOCAL_HOST + "/auth/verify-email/" + user.getVerificationToken();
         context.setVariable("url", url);
-        emailService.sendEmailWithHtmlTemplate(dto.getEmail(), messages.getString("email.verify"), "email-verification", context);
-        return new AuthResponseDTO(null, true);
+        emailService.sendEmailWithHtmlTemplate(dto.getEmail(), messages.getString("email.verify"), "email-verification",
+                context);
+        return new AuthResponseDTO(
+                null,
+                true,
+                user.getId(),
+                user.getName(),
+                user.getAddress(),
+                user.getPhone(),
+                user.getEmail(),
+                user.getRole());
     }
 
     @Override
     public AuthResponseDTO signIn(AuthRequestDTO authRequestDTO) throws BadRequestException {
-        AuthResponseDTO authResponseDTO = new AuthResponseDTO();
         String username = authRequestDTO.getEmail();
         String password = authRequestDTO.getPassword();
+
+        // Xác thực thông tin đăng nhập
         Authentication authentication = authenticate(username, password);
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // Lấy thông tin user từ cơ sở dữ liệu
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new BadRequestException(messages.getString("username.validate.invalid")));
+
+        // Tạo JWT token
         String accessToken = jwtTokenProvider.generateToken(authentication);
-        authResponseDTO.setStatus(true);
-        authResponseDTO.setJwt(accessToken);
-        return authResponseDTO;
+
+        // Trả về AuthResponseDTO với thông tin người dùng
+        return new AuthResponseDTO(
+                accessToken,
+                true,
+                user.getId(),
+                user.getName(),
+                user.getAddress(),
+                user.getPhone(),
+                user.getEmail(),
+                user.getRole());
     }
 
     @Override
     public String confirmEmail(String token) throws Exception {
         User user = userRepository.findByVerificationToken(token)
                 .orElseThrow(() -> new NotFoundException(messages.getString("user.validate.not-found")));
-        if(!token.equals(user.getVerificationToken())){
+        if (!token.equals(user.getVerificationToken())) {
             userRepository.delete(user);
             throw new BadRequestException(messages.getString("user.validate.token-invalid"));
         }
@@ -166,14 +190,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private Authentication authenticate(String username, String password) throws BadRequestException {
         UserDetails userDetails = loadUserByUsername(username);
         System.out.println(userDetails);
-        if(userDetails == null) {
+        if (userDetails == null) {
             throw new BadCredentialsException(messages.getString("username.validate.invalid"));
         }
-        if(!passwordEncoder.matches(password, userDetails.getPassword())) {
+        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
             throw new BadCredentialsException(messages.getString("password.validate.invalid"));
         }
         User user = userRepository.findByEmail(username).get();
-        if(user.getStatus() != 1) {
+        if (user.getStatus() != 1) {
             throw new BadRequestException(messages.getString("account.validate.not-verified"));
         }
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

@@ -85,6 +85,7 @@ public class BookServiceImpl implements BookService {
         book.setUpdatedBy(jwtTokenProvider.getEmailFromJwtToken(jwt));
         book.setAuthor(author);
         book.setPublisher(publisher);
+        book.setType(dto.getType());
         return bookRepository.save(book);
     }
 
