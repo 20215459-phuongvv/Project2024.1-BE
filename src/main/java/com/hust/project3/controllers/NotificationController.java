@@ -14,6 +14,11 @@ import java.util.List;
 public class NotificationController {
     private final NotificationService notificationService;
 
+    @GetMapping
+    public List<Notification> getAllNotifications(@RequestHeader("Authorization") String jwt) throws NotFoundException {
+        return notificationService.getAllNotifications(jwt);
+    }
+
     @GetMapping("/unread")
     public List<Notification> getUnreadNotifications(@RequestHeader("Authorization") String jwt) throws NotFoundException {
         return notificationService.getUnreadNotifications(jwt);

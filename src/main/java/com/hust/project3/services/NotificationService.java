@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface NotificationService {
     void createNotification(Long userId, String message);
+    List<Notification> getAllNotifications(String jwt) throws NotFoundException;
     List<Notification> getUnreadNotifications(String jwt) throws NotFoundException;
     void markAsRead(Long notificationId);
     void notifySubscribers(Book book) throws MessagingException;

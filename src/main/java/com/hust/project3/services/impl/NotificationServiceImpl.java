@@ -41,6 +41,13 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    public List<Notification> getAllNotifications(String jwt) throws NotFoundException {
+        User user = userRepository.findByEmail(jwtTokenProvider.getEmailFromJwtToken(jwt))
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        return notificationRepository.findAllByUserIdOrderByIdDesc(user.getId());
+    }
+
+    @Override
     public List<Notification> getUnreadNotifications(String jwt) throws NotFoundException {
         User user = userRepository.findByEmail(jwtTokenProvider.getEmailFromJwtToken(jwt))
                 .orElseThrow(() -> new NotFoundException("User not found"));
