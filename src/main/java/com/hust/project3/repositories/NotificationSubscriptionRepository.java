@@ -15,4 +15,6 @@ public interface NotificationSubscriptionRepository extends JpaRepository<Notifi
     List<NotificationSubscription> findAllByBookId(Long id);
 
     Page<NotificationSubscription> findByUser(User user, Pageable pageable);
+
+    Boolean existsByUserIdAndBookId(Long id, Long id1);
 }

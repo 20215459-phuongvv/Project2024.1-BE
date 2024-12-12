@@ -2,20 +2,20 @@ package com.hust.project3.services.impl;
 
 import com.hust.project3.dtos.PagingRequestDTO;
 import com.hust.project3.dtos.book.BookRequestDTO;
+import com.hust.project3.dtos.book.BookResponseDTO;
 import com.hust.project3.entities.Author;
 import com.hust.project3.entities.Book;
 import com.hust.project3.entities.Publisher;
+import com.hust.project3.entities.User;
 import com.hust.project3.enums.BookTypeEnum;
 import com.hust.project3.enums.EntityStatusEnum;
 import com.hust.project3.exceptions.NotFoundException;
-import com.hust.project3.repositories.AuthorRepository;
-import com.hust.project3.repositories.BookRepository;
-import com.hust.project3.repositories.PublisherRepository;
+import com.hust.project3.repositories.*;
 import com.hust.project3.security.JwtTokenProvider;
 import com.hust.project3.services.BookService;
 import com.hust.project3.services.NotificationService;
-import com.hust.project3.services.NotificationSubscriptionService;
 import com.hust.project3.specification.BookSpecification;
+import com.hust.project3.utils.SecurityUtil;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,13 +37,31 @@ public class BookServiceImpl implements BookService {
     private final PublisherRepository publisherRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final NotificationService notificationService;
+    private final NotificationSubscriptionRepository notificationSubscriptionRepository;
+    private final UserRepository userRepository;
 
     @Override
-    public Page<Book> getBooksByProperties(BookRequestDTO dto, PagingRequestDTO pagingRequestDTO) {
+    public Page<BookResponseDTO> getBooksByProperties(BookRequestDTO dto, PagingRequestDTO pagingRequestDTO) {
         Pageable pageable = PageRequest.of(pagingRequestDTO.getPage(), pagingRequestDTO.getSize(), Sort.by("id").descending());
         dto.setIsVip(false);
         Specification<Book> spec = BookSpecification.byCriteria(dto);
-        return bookRepository.findAll(spec, pageable);
+        Page<Book> page = bookRepository.findAll(spec, pageable);
+        Optional<User> userOptional = userRepository.findByEmail(SecurityUtil.getUserEmail());
+        return page.map(book -> {
+            Boolean isSubscribed = userOptional
+                    .map(user -> notificationSubscriptionRepository.existsByUserIdAndBookId(user.getId(), book.getId()))
+                    .orElse(null);
+            return BookResponseDTO.builder()
+                    .id(book.getId())
+                    .author(book.getAuthor())
+                    .publisher(book.getPublisher())
+                    .title(book.getTitle())
+                    .type(book.getType())
+                    .isAvailable(book.getIsAvailable())
+                    .status(book.getStatus())
+                    .isSubscribe(isSubscribed)
+                    .build();
+        });
     }
 
     @Override
@@ -90,11 +109,28 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Page<Book> getVipBooksByProperties(BookRequestDTO dto, PagingRequestDTO pagingRequestDTO) {
+    public Page<BookResponseDTO> getVipBooksByProperties(BookRequestDTO dto, PagingRequestDTO pagingRequestDTO) {
         Pageable pageable = PageRequest.of(pagingRequestDTO.getPage(), pagingRequestDTO.getSize());
         dto.setIsVip(true);
         Specification<Book> spec = BookSpecification.byCriteria(dto);
-        return bookRepository.findAll(spec, pageable);
+        Page<Book> page = bookRepository.findAll(spec, pageable);
+        String email = SecurityUtil.getUserEmail();
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        return page.map(book -> {
+            Boolean isSubscribed = userOptional
+                    .map(user -> notificationSubscriptionRepository.existsByUserIdAndBookId(user.getId(), book.getId()))
+                    .orElse(null);
+            return BookResponseDTO.builder()
+                    .id(book.getId())
+                    .author(book.getAuthor())
+                    .publisher(book.getPublisher())
+                    .title(book.getTitle())
+                    .type(book.getType())
+                    .isAvailable(book.getIsAvailable())
+                    .status(book.getStatus())
+                    .isSubscribe(isSubscribed)
+                    .build();
+        });
     }
 
     @Override

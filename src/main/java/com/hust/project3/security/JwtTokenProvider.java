@@ -19,7 +19,7 @@ public class JwtTokenProvider {
     public String generateToken(Authentication auth) {
         return Jwts.builder()
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(new Date().getTime()+86400000))
+//                .setExpiration(new Date(new Date().getTime()+86400000))
                 .claim("email",auth.getName())
                 .claim("role", auth.getAuthorities())
                 .signWith(key)

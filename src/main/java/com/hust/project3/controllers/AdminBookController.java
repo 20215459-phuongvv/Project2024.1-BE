@@ -4,6 +4,7 @@ import com.hust.project3.dtos.PagingRequestDTO;
 import com.hust.project3.dtos.Result;
 import com.hust.project3.dtos.ResultMeta;
 import com.hust.project3.dtos.book.BookRequestDTO;
+import com.hust.project3.dtos.book.BookResponseDTO;
 import com.hust.project3.entities.Book;
 import com.hust.project3.exceptions.NotFoundException;
 import com.hust.project3.services.BookService;
@@ -25,7 +26,7 @@ public class AdminBookController {
 
     @GetMapping
     public Result getBooksByProperties(BookRequestDTO dto, PagingRequestDTO pagingRequestDTO) {
-        Page<Book> page = bookService.getVipBooksByProperties(dto, pagingRequestDTO);
+        Page<BookResponseDTO> page = bookService.getVipBooksByProperties(dto, pagingRequestDTO);
         return Result.ok(page.getContent(), ResultMeta.of(page));
     }
 
