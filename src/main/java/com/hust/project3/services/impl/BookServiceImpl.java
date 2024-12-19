@@ -13,6 +13,7 @@ import com.hust.project3.exceptions.NotFoundException;
 import com.hust.project3.repositories.*;
 import com.hust.project3.security.JwtTokenProvider;
 import com.hust.project3.services.BookService;
+import com.hust.project3.services.CloudinaryService;
 import com.hust.project3.services.NotificationService;
 import com.hust.project3.specification.BookSpecification;
 import com.hust.project3.utils.SecurityUtil;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +41,7 @@ public class BookServiceImpl implements BookService {
     private final NotificationService notificationService;
     private final NotificationSubscriptionRepository notificationSubscriptionRepository;
     private final UserRepository userRepository;
+    private final CloudinaryService cloudinaryService;
 
     @Override
     public Page<BookResponseDTO> getBooksByProperties(BookRequestDTO dto, PagingRequestDTO pagingRequestDTO) {
@@ -60,6 +63,7 @@ public class BookServiceImpl implements BookService {
                     .isAvailable(book.getIsAvailable())
                     .status(book.getStatus())
                     .isSubscribe(isSubscribed)
+                    .thumbnail(book.getThumbnail())
                     .build();
         });
     }
@@ -71,7 +75,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Book addBook(String jwt, BookRequestDTO dto) throws NotFoundException {
+    public Book addBook(String jwt, BookRequestDTO dto) throws NotFoundException, IOException {
         Author author = authorRepository.findById(dto.getAuthorId())
                 .orElseThrow(() -> new NotFoundException("Author not found"));
         Publisher publisher = publisherRepository.findById(dto.getPublisherId())
@@ -84,12 +88,13 @@ public class BookServiceImpl implements BookService {
                 .type(dto.getType())
                 .status(EntityStatusEnum.ACTIVE.ordinal())
                 .updatedBy(jwtTokenProvider.getEmailFromJwtToken(jwt))
+                .thumbnail(cloudinaryService.upload(dto.getThumbnail().getBytes(), dto.getThumbnail().getOriginalFilename(), "thumbnails"))
                 .build();
         return bookRepository.save(book);
     }
 
     @Override
-    public Book updateBook(String jwt, BookRequestDTO dto) throws NotFoundException, MessagingException {
+    public Book updateBook(String jwt, BookRequestDTO dto) throws NotFoundException, MessagingException, IOException {
         Book book = bookRepository.findById(dto.getId())
                 .orElseThrow(() -> new NotFoundException("Book not found"));
         Author author = authorRepository.findById(dto.getAuthorId())
@@ -99,6 +104,9 @@ public class BookServiceImpl implements BookService {
         book.setTitle(dto.getTitle());
         if (!book.getIsAvailable() && dto.getIsAvailable()) {
             notificationService.notifySubscribers(book);
+        }
+        if (dto.getThumbnail() != null) {
+            book.setThumbnail(cloudinaryService.upload(dto.getThumbnail().getBytes(), dto.getThumbnail().getOriginalFilename(), "thumbnails"));
         }
         book.setIsAvailable(dto.getIsAvailable());
         book.setUpdatedBy(jwtTokenProvider.getEmailFromJwtToken(jwt));
@@ -129,6 +137,7 @@ public class BookServiceImpl implements BookService {
                     .isAvailable(book.getIsAvailable())
                     .status(book.getStatus())
                     .isSubscribe(isSubscribed)
+                    .thumbnail(book.getThumbnail())
                     .build();
         });
     }

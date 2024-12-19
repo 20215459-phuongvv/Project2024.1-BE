@@ -44,6 +44,7 @@ public class AuthorServiceImpl implements AuthorService {
         Author author = Author.builder()
                 .name(dto.getName())
                 .updatedBy(jwtTokenProvider.getEmailFromJwtToken(jwt))
+                .status(dto.getStatus())
                 .build();
         return authorRepository.save(author);
     }
@@ -54,6 +55,7 @@ public class AuthorServiceImpl implements AuthorService {
                 .orElseThrow(() -> new NotFoundException("Author not found"));
         author.setName(dto.getName());
         author.setUpdatedBy(jwtTokenProvider.getEmailFromJwtToken(jwt));
+        author.setStatus(dto.getStatus());
         return authorRepository.save(author);
     }
 

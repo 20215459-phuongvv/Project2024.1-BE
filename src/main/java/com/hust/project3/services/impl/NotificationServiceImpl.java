@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -30,9 +31,9 @@ public class NotificationServiceImpl implements NotificationService {
     private final EmailService emailService;
 
     @Override
-    public void createNotification(Long userId, String message) {
+    public void createNotification(User user, String message) {
         Notification notification = Notification.builder()
-                .user(User.builder().id(userId).build())
+                .user(user)
                 .message(message)
                 .createdAt(LocalDateTime.now())
                 .isRead(false)
@@ -64,21 +65,19 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public void notifySubscribers(Book book) throws MessagingException {
-        if (book.getIsAvailable()) {
-            List<NotificationSubscription> subscriptions = subscriptionRepository.findAllByBookId(book.getId());
-            for (NotificationSubscription subscription : subscriptions) {
-                String message = "The book '" + book.getTitle() + "' is now available!";
-                createNotification(subscription.getUser().getId(), message);
-                Context context = new Context();
-                context.setVariable("userName", subscription.getUser().getName());
-                context.setVariable("bookName", subscription.getBook().getTitle());
-                context.setVariable("bookLink", null);
+        List<NotificationSubscription> subscriptions = subscriptionRepository.findByBook(book);
+        for (NotificationSubscription subscription : subscriptions) {
+            String message = "The book '" + book.getTitle() + "' is now available!";
+            createNotification(subscription.getUser(), message);
+            Context context = new Context();
+            context.setVariable("userName", subscription.getUser().getName());
+            context.setVariable("bookName", subscription.getBook().getTitle());
+            context.setVariable("bookLink", null);
 
-                emailService.sendEmailWithHtmlTemplate(subscription.getUser().getEmail(),
-                        message,
-                        "notification-email",
-                        context);
-            }
+            emailService.sendEmailWithHtmlTemplate(subscription.getUser().getEmail(),
+                    message,
+                    "notification_email",
+                    context);
         }
     }
 }

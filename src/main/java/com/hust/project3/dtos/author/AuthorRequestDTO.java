@@ -6,4 +6,5 @@ import lombok.Data;
 public class AuthorRequestDTO {
     private Long id;
     private String name;
+    private Integer status;
 }

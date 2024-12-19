@@ -57,11 +57,6 @@ public class ReadingCardServiceImpl implements ReadingCardService {
     }
 
     @Override
-    public ReadingCard addPayment(String jwt, ReadingCardRequestDTO dto) {
-        return null;
-    }
-
-    @Override
     public ReadingCard renewReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException {
         ReadingCard readingCard = getReadingCardByUser(jwt);
         if (readingCard.getType() == ReadingCardTypeEnum.MONTHLY.ordinal()) {

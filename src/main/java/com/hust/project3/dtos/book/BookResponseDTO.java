@@ -19,4 +19,5 @@ public class BookResponseDTO {
     private String updatedBy;
     private Integer status;
     private Boolean isSubscribe;
+    private String thumbnail;
 }

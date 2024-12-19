@@ -10,9 +10,6 @@ public interface ReadingCardService {
     ReadingCard getReadingCardByUser(String jwt) throws NotFoundException;
 
     ReadingCard addReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException;
-
-    ReadingCard addPayment(String jwt, ReadingCardRequestDTO dto);
-
     ReadingCard renewReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException;
 
     ReadingCard cancelReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException;

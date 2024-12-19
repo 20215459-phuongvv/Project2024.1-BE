@@ -8,6 +8,7 @@ import com.hust.project3.exceptions.NotFoundException;
 import jakarta.mail.MessagingException;
 import org.springframework.data.domain.Page;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface BookService {
@@ -15,9 +16,9 @@ public interface BookService {
 
     Book getBookById(Long id) throws NotFoundException;
 
-    Book addBook(String jwt, BookRequestDTO dto) throws NotFoundException;
+    Book addBook(String jwt, BookRequestDTO dto) throws NotFoundException, IOException;
 
-    Book updateBook(String jwt, BookRequestDTO dto) throws NotFoundException, MessagingException;
+    Book updateBook(String jwt, BookRequestDTO dto) throws NotFoundException, MessagingException, IOException;
 
     Page<BookResponseDTO> getVipBooksByProperties(BookRequestDTO dto, PagingRequestDTO pagingRequestDTO);
 

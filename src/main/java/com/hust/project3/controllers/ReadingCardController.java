@@ -25,12 +25,6 @@ public class ReadingCardController {
         return Result.ok(readingCardService.addReadingCard(jwt, dto));
     }
 
-    @PostMapping("/payment")
-    public Result addPayment(@RequestHeader("Authorization") String jwt,
-                                  @RequestBody @Valid ReadingCardRequestDTO dto) {
-        return Result.ok(readingCardService.addPayment(jwt, dto));
-    }
-
     @PutMapping("/renew")
     public Result renewReadingCard(@RequestHeader("Authorization") String jwt,
                                         @RequestBody @Valid ReadingCardRequestDTO dto) throws NotFoundException {

@@ -12,9 +12,11 @@ import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -35,15 +37,15 @@ public class AdminBookController {
         return Result.ok(bookService.getVipBookById(id));
     }
 
-    @PostMapping
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public Result addBook(@RequestHeader("Authorization") String jwt,
-                          @RequestBody @Valid BookRequestDTO dto) throws NotFoundException {
+                          @ModelAttribute @Valid BookRequestDTO dto) throws NotFoundException, IOException {
         return Result.ok(bookService.addBook(jwt, dto));
     }
 
-    @PutMapping
+    @PutMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public Result updateBook(@RequestHeader("Authorization") String jwt,
-                             @RequestBody @Valid BookRequestDTO dto) throws NotFoundException, MessagingException {
+                             @ModelAttribute @Valid BookRequestDTO dto) throws NotFoundException, MessagingException, IOException {
         return Result.ok(bookService.updateBook(jwt, dto));
     }
 

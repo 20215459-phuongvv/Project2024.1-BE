@@ -47,4 +47,7 @@ public class Book {
 
     @Column(name = "status")
     private Integer status;
+
+    @Column(name = "thumbnail")
+    private String thumbnail;
 }

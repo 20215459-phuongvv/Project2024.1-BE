@@ -43,6 +43,7 @@ public class PublisherServiceImpl implements PublisherService {
     public Publisher addPublisher(String jwt, PublisherRequestDTO dto) {
         Publisher publisher = Publisher.builder()
                 .name(dto.getName())
+                .status(dto.getStatus())
                 .updatedBy(jwtTokenProvider.getEmailFromJwtToken(jwt))
                 .build();
         return publisherRepository.save(publisher);
@@ -53,6 +54,7 @@ public class PublisherServiceImpl implements PublisherService {
         Publisher publisher = publisherRepository.findById(dto.getId())
                 .orElseThrow(() -> new NotFoundException("Publisher not found"));
         publisher.setName(dto.getName());
+        publisher.setStatus(dto.getStatus());
         publisher.setUpdatedBy(jwtTokenProvider.getEmailFromJwtToken(jwt));
         return publisherRepository.save(publisher);
     }

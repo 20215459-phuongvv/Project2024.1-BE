@@ -1,6 +1,7 @@
 package com.hust.project3.dtos.book;
 
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class BookRequestDTO {
@@ -11,4 +12,5 @@ public class BookRequestDTO {
     private Boolean isAvailable;
     private Integer type;
     private Boolean isVip;
+    private MultipartFile thumbnail;
 }
