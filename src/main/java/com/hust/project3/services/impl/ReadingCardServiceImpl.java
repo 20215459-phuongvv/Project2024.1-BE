@@ -1,6 +1,7 @@
 package com.hust.project3.services.impl;
 
 import com.hust.project3.dtos.PagingRequestDTO;
+import com.hust.project3.dtos.payment.PaymentDTO;
 import com.hust.project3.dtos.readingCard.ReadingCardRequestDTO;
 import com.hust.project3.entities.ReadingCard;
 import com.hust.project3.entities.User;
@@ -10,6 +11,7 @@ import com.hust.project3.exceptions.NotFoundException;
 import com.hust.project3.repositories.ReadingCardRepository;
 import com.hust.project3.repositories.UserRepository;
 import com.hust.project3.security.JwtTokenProvider;
+import com.hust.project3.services.PaymentService;
 import com.hust.project3.services.ReadingCardService;
 import com.hust.project3.specification.ReadingCardSpecification;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +30,7 @@ public class ReadingCardServiceImpl implements ReadingCardService {
     private final ReadingCardRepository readingCardRepository;
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
-
+    private final PaymentService paymentService;
     @Override
     public ReadingCard getReadingCardByUser(String jwt) throws NotFoundException {
         String email = jwtTokenProvider.getEmailFromJwtToken(jwt);
@@ -39,7 +41,7 @@ public class ReadingCardServiceImpl implements ReadingCardService {
 
     @Override
     @Transactional
-    public ReadingCard addReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException {
+    public PaymentDTO.VNPayResponse addReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException {
         String email = jwtTokenProvider.getEmailFromJwtToken(jwt);
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found!"));
@@ -53,18 +55,19 @@ public class ReadingCardServiceImpl implements ReadingCardService {
                 .updatedBy(email)
                 .user(user)
                 .build();
-        return readingCardRepository.save(readingCard);
+//        readingCardRepository.save(readingCard);
+        return paymentService.createVnPayPayment(dto);
     }
 
     @Override
-    public ReadingCard renewReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException {
+    public PaymentDTO.VNPayResponse renewReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException {
         ReadingCard readingCard = getReadingCardByUser(jwt);
         if (readingCard.getType() == ReadingCardTypeEnum.MONTHLY.ordinal()) {
             readingCard.setExpiryDate(readingCard.getExpiryDate().plusMonths(dto.getNumberOfPeriod()));
         } else if (readingCard.getType() == ReadingCardTypeEnum.YEARLY.ordinal()) {
             readingCard.setExpiryDate(readingCard.getExpiryDate().plusYears(dto.getNumberOfPeriod()));
         }
-        return readingCardRepository.save(readingCard);
+        return paymentService.createVnPayPayment(dto);
     }
 
     @Override
