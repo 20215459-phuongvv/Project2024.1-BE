@@ -13,4 +13,5 @@ public class BookRequestDTO {
     private Integer type;
     private Boolean isVip;
     private MultipartFile thumbnail;
+    private Integer status;
 }

@@ -9,6 +9,7 @@ import com.hust.project3.entities.Publisher;
 import com.hust.project3.entities.User;
 import com.hust.project3.enums.BookTypeEnum;
 import com.hust.project3.enums.EntityStatusEnum;
+import com.hust.project3.enums.RoleEnum;
 import com.hust.project3.exceptions.NotFoundException;
 import com.hust.project3.repositories.*;
 import com.hust.project3.security.JwtTokenProvider;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -46,13 +48,13 @@ public class BookServiceImpl implements BookService {
     @Override
     public Page<BookResponseDTO> getBooksByProperties(BookRequestDTO dto, PagingRequestDTO pagingRequestDTO) {
         Pageable pageable = PageRequest.of(pagingRequestDTO.getPage(), pagingRequestDTO.getSize(), Sort.by("id").descending());
-        dto.setIsVip(false);
+        Optional<User> userOptional = userRepository.findByEmail(SecurityUtil.getUserEmail());
+        dto.setIsVip(userOptional.isPresent() && Objects.equals(userOptional.get().getRole(), RoleEnum.VIP_USER.name()));
         Specification<Book> spec = BookSpecification.byCriteria(dto);
         Page<Book> page = bookRepository.findAll(spec, pageable);
-        Optional<User> userOptional = userRepository.findByEmail(SecurityUtil.getUserEmail());
         return page.map(book -> {
             Boolean isSubscribed = userOptional
-                    .map(user -> notificationSubscriptionRepository.existsByUserIdAndBookId(user.getId(), book.getId()))
+                    .map(currentUser -> notificationSubscriptionRepository.existsByUserIdAndBookId(currentUser.getId(), book.getId()))
                     .orElse(null);
             return BookResponseDTO.builder()
                     .id(book.getId())
@@ -70,6 +72,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book getBookById(Long id) throws NotFoundException {
+
         return bookRepository.findByIdAndType(id, BookTypeEnum.NORMAL.ordinal())
                 .orElseThrow(() -> new NotFoundException("Book not found"));
     }
@@ -113,13 +116,13 @@ public class BookServiceImpl implements BookService {
         book.setAuthor(author);
         book.setPublisher(publisher);
         book.setType(dto.getType());
+        book.setStatus(dto.getStatus());
         return bookRepository.save(book);
     }
 
     @Override
     public Page<BookResponseDTO> getVipBooksByProperties(BookRequestDTO dto, PagingRequestDTO pagingRequestDTO) {
         Pageable pageable = PageRequest.of(pagingRequestDTO.getPage(), pagingRequestDTO.getSize());
-        dto.setIsVip(true);
         Specification<Book> spec = BookSpecification.byCriteria(dto);
         Page<Book> page = bookRepository.findAll(spec, pageable);
         String email = SecurityUtil.getUserEmail();
