@@ -20,10 +20,7 @@ import com.hust.project3.specification.BookSpecification;
 import com.hust.project3.utils.SecurityUtil;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -52,7 +50,7 @@ public class BookServiceImpl implements BookService {
         dto.setIsVip(userOptional.isPresent() && Objects.equals(userOptional.get().getRole(), RoleEnum.VIP_USER.name()));
         Specification<Book> spec = BookSpecification.byCriteria(dto);
         Page<Book> page = bookRepository.findAll(spec, pageable);
-        return page.map(book -> {
+        Page<BookResponseDTO> bookResponseDTOPage = page.map(book -> {
             Boolean isSubscribed = userOptional
                     .map(currentUser -> notificationSubscriptionRepository.existsByUserIdAndBookId(currentUser.getId(), book.getId()))
                     .orElse(null);
@@ -68,6 +66,15 @@ public class BookServiceImpl implements BookService {
                     .thumbnail(book.getThumbnail())
                     .build();
         });
+        if (dto.getIsSubscribe() != null) {
+            List<BookResponseDTO> filteredList = bookResponseDTOPage.stream()
+                    .filter(bookResponseDTO -> bookResponseDTO.getIsSubscribe().equals(dto.getIsSubscribe()))
+                    .collect(Collectors.toList());
+
+            bookResponseDTOPage = new PageImpl<>(filteredList, pageable, filteredList.size());
+        }
+
+        return bookResponseDTOPage;
     }
 
     @Override

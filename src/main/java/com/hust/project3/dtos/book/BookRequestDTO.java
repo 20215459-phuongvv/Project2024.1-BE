@@ -14,4 +14,5 @@ public class BookRequestDTO {
     private Boolean isVip;
     private MultipartFile thumbnail;
     private Integer status;
+    private Boolean isSubscribe;
 }
