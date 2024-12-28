@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/admin/users")
@@ -33,5 +35,10 @@ public class AdminUserController {
     public Result updateUser(@RequestHeader("Authorization") String jwt,
                              @RequestBody UserRequestDTO dto) throws NotFoundException {
         return Result.ok(userService.updateUser(jwt, dto));
+    }
+
+    @GetMapping("/recent-users")
+    public Result getRecentUsers(LocalDate startDate, LocalDate endDate) {
+        return Result.ok(userService.getRecentUsers(startDate, endDate));
     }
 }

@@ -13,6 +13,7 @@ import com.hust.project3.repositories.UserRepository;
 import com.hust.project3.security.JwtTokenProvider;
 import com.hust.project3.services.SettingService;
 import com.hust.project3.specification.SettingSpecification;
+import com.hust.project3.utils.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,8 +40,8 @@ public class SettingServiceImpl implements SettingService {
     }
 
     @Override
-    public Setting getSettingById(Long id) throws NotFoundException {
-        return settingRepository.findById(id)
+    public Setting getSettingByKey(String key) throws NotFoundException {
+        return settingRepository.findByKey(key)
                 .orElseThrow(() -> new NotFoundException("Setting not found"));
     }
 
@@ -78,7 +79,7 @@ public class SettingServiceImpl implements SettingService {
         }
         Setting setting = settingOptional.get();
         setting.setValue(dto.getValue());
-        setting.setUpdatedBy(jwtTokenProvider.getEmailFromJwtToken(jwt));
+        setting.setUpdatedBy(SecurityUtil.getUserEmail());
         return settingRepository.save(setting);
     }
 
@@ -90,7 +91,7 @@ public class SettingServiceImpl implements SettingService {
         }
         Setting setting = settingOptional.get();
         setting.setValue(dto.getValue());
-        setting.setUpdatedBy(jwtTokenProvider.getEmailFromJwtToken(jwt));
+        setting.setUpdatedBy(SecurityUtil.getUserEmail());
         return settingRepository.save(setting);
     }
 
@@ -106,5 +107,56 @@ public class SettingServiceImpl implements SettingService {
                     .orElseThrow(() -> new NotFoundException("Setting not found"));
         }
         return null;
+    }
+
+    @Override
+    public Setting updateMonthlyCardPrice(SettingRequestDTO dto) {
+        Optional<Setting> settingOptional = settingRepository.findByKey(SettingKeyEnum.MONTHLY_CARD_PRICE.name());
+        if (settingOptional.isEmpty()) {
+            Setting setting = Setting.builder()
+                    .key(SettingKeyEnum.MONTHLY_CARD_PRICE.name())
+                    .value(dto.getValue())
+                    .updatedBy(SecurityUtil.getUserEmail())
+                    .build();
+            return settingRepository.save(setting);
+        }
+        Setting setting = settingOptional.get();
+        setting.setValue(dto.getValue());
+        setting.setUpdatedBy(SecurityUtil.getUserEmail());
+        return settingRepository.save(setting);
+    }
+
+    @Override
+    public Setting updateYearlyCardPrice(SettingRequestDTO dto) {
+        Optional<Setting> settingOptional = settingRepository.findByKey(SettingKeyEnum.YEARLY_CARD_PRICE.name());
+        if (settingOptional.isEmpty()) {
+            Setting setting = Setting.builder()
+                    .key(SettingKeyEnum.YEARLY_CARD_PRICE.name())
+                    .value(dto.getValue())
+                    .updatedBy(SecurityUtil.getUserEmail())
+                    .build();
+            return settingRepository.save(setting);
+        }
+        Setting setting = settingOptional.get();
+        setting.setValue(dto.getValue());
+        setting.setUpdatedBy(SecurityUtil.getUserEmail());
+        return settingRepository.save(setting);
+    }
+
+    @Override
+    public Setting updateUpgradeVipPrice(SettingRequestDTO dto) {
+        Optional<Setting> settingOptional = settingRepository.findByKey(SettingKeyEnum.UPGRADE_VIP_PRICE.name());
+        if (settingOptional.isEmpty()) {
+            Setting setting = Setting.builder()
+                    .key(SettingKeyEnum.UPGRADE_VIP_PRICE.name())
+                    .value(dto.getValue())
+                    .updatedBy(SecurityUtil.getUserEmail())
+                    .build();
+            return settingRepository.save(setting);
+        }
+        Setting setting = settingOptional.get();
+        setting.setValue(dto.getValue());
+        setting.setUpdatedBy(SecurityUtil.getUserEmail());
+        return settingRepository.save(setting);
     }
 }

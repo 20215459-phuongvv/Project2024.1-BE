@@ -10,9 +10,9 @@ import org.springframework.data.domain.Page;
 public interface ReadingCardService {
     ReadingCard getReadingCardByUser(String jwt) throws NotFoundException;
 
-    PaymentDTO.VNPayResponse addReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException;
+    ReadingCard addReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException;
 
-    PaymentDTO.VNPayResponse renewReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException;
+    ReadingCard renewReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException;
 
     ReadingCard cancelReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException;
 
@@ -23,4 +23,6 @@ public interface ReadingCardService {
     ReadingCard warnReadingCard(Long id) throws NotFoundException;
 
     ReadingCard toggleReadingCardStatus(Long id) throws NotFoundException;
+
+    PaymentDTO.VNPayResponse requestPayment(ReadingCardRequestDTO dto);
 }

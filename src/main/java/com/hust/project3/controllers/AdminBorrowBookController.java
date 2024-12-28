@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/admin/borrow")
@@ -33,5 +35,10 @@ public class AdminBorrowBookController {
     @PutMapping("/{id}")
     public Result updateBorrowing(@PathVariable("id") Long id) throws MessagingException, NotFoundException {
         return Result.ok(borrowBookService.updateReturnedBorrowing(id));
+    }
+
+    @GetMapping("/recent-borrow")
+    public Result getRecentBorrowBook(LocalDate startDate, LocalDate endDate) {
+        return Result.ok(borrowBookService.getRecentBorrowing(startDate, endDate));
     }
 }

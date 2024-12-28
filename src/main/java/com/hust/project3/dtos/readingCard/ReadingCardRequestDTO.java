@@ -15,4 +15,5 @@ public class ReadingCardRequestDTO {
     private Integer status;
     private LocalDate startDate;
     private LocalDate expiryDate;
+    private Integer isRegistering;
 }

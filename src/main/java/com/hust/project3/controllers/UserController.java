@@ -30,4 +30,14 @@ public class UserController {
                                  @RequestBody AuthRequestDTO dto) throws NotFoundException {
         return Result.ok(userService.changePassword(jwt, dto));
     }
+
+    @PutMapping("/upgrade-vip")
+    public Result upgradeVip() {
+        return Result.ok(userService.upgradeVip());
+    }
+
+    @PutMapping("/request-payment")
+    public Result requestPayment() {
+        return Result.ok(userService.requestUpgradeVipPayment());
+    }
 }

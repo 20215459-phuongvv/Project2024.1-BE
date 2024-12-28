@@ -19,6 +19,11 @@ public class ReadingCardController {
         return Result.ok(readingCardService.getReadingCardByUser(jwt));
     }
 
+    @PostMapping("/request-payment")
+    public Result requestPayment(@RequestBody @Valid ReadingCardRequestDTO dto) throws NotFoundException {
+        return Result.ok(readingCardService.requestPayment(dto));
+    }
+
     @PostMapping("/register")
     public Result addReadingCard(@RequestHeader("Authorization") String jwt,
                                  @RequestBody @Valid ReadingCardRequestDTO dto) throws NotFoundException {
@@ -33,7 +38,7 @@ public class ReadingCardController {
 
     @DeleteMapping("/cancel")
     public Result cancelReadingCard(@RequestHeader("Authorization") String jwt,
-                                         @RequestBody @Valid ReadingCardRequestDTO dto) throws NotFoundException {
+                                    @RequestBody @Valid ReadingCardRequestDTO dto) throws NotFoundException {
         return Result.ok(readingCardService.cancelReadingCard(jwt, dto));
     }
 }

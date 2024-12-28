@@ -41,7 +41,7 @@ public class ReadingCardServiceImpl implements ReadingCardService {
 
     @Override
     @Transactional
-    public PaymentDTO.VNPayResponse addReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException {
+    public ReadingCard addReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException {
         String email = jwtTokenProvider.getEmailFromJwtToken(jwt);
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found!"));
@@ -51,23 +51,22 @@ public class ReadingCardServiceImpl implements ReadingCardService {
                 .startDate(LocalDate.now())
                 .expiryDate(dto.getType() == ReadingCardTypeEnum.MONTHLY.ordinal() ? LocalDate.now().plusMonths(dto.getNumberOfPeriod()) : LocalDate.now().plusYears(dto.getNumberOfPeriod()))
                 .violationCount(0)
-                .status(ReadingCardStatusEnum.PENDING.ordinal())
+                .status(ReadingCardStatusEnum.ACTIVATED.ordinal())
                 .updatedBy(email)
                 .user(user)
                 .build();
-//        readingCardRepository.save(readingCard);
-        return paymentService.createVnPayPayment(dto);
+        return readingCardRepository.save(readingCard);
     }
 
     @Override
-    public PaymentDTO.VNPayResponse renewReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException {
+    public ReadingCard renewReadingCard(String jwt, ReadingCardRequestDTO dto) throws NotFoundException {
         ReadingCard readingCard = getReadingCardByUser(jwt);
         if (readingCard.getType() == ReadingCardTypeEnum.MONTHLY.ordinal()) {
             readingCard.setExpiryDate(readingCard.getExpiryDate().plusMonths(dto.getNumberOfPeriod()));
         } else if (readingCard.getType() == ReadingCardTypeEnum.YEARLY.ordinal()) {
             readingCard.setExpiryDate(readingCard.getExpiryDate().plusYears(dto.getNumberOfPeriod()));
         }
-        return paymentService.createVnPayPayment(dto);
+        return readingCardRepository.save(readingCard);
     }
 
     @Override
@@ -111,5 +110,10 @@ public class ReadingCardServiceImpl implements ReadingCardService {
             readingCard.setStatus(ReadingCardStatusEnum.BANNED.ordinal());
         }
         return readingCardRepository.save(readingCard);
+    }
+
+    @Override
+    public PaymentDTO.VNPayResponse requestPayment(ReadingCardRequestDTO dto) {
+        return paymentService.createVnPayPayment(dto);
     }
 }

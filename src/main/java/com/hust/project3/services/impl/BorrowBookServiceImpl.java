@@ -29,6 +29,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -124,5 +126,12 @@ public class BorrowBookServiceImpl implements BorrowBookService {
         book = bookRepository.save(book);
         notificationService.notifySubscribers(book);
         return borrowBookRepository.save(borrowBook);
+    }
+
+    @Override
+    public List<BorrowBook> getRecentBorrowing(LocalDate startDate, LocalDate endDate) {
+        LocalDateTime start = startDate.atTime(LocalTime.MIN);
+        LocalDateTime end = endDate.atTime(LocalTime.MAX);
+        return borrowBookRepository.findBorrowBookByBorrowDate(start, end);
     }
 }

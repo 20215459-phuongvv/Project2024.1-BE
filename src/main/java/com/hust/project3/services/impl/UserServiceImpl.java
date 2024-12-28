@@ -3,6 +3,7 @@ package com.hust.project3.services.impl;
 import com.hust.project3.dtos.PagingRequestDTO;
 import com.hust.project3.dtos.auth.AuthRequestDTO;
 import com.hust.project3.dtos.auth.AuthResponseDTO;
+import com.hust.project3.dtos.payment.PaymentDTO;
 import com.hust.project3.dtos.user.UserQueryRequestDTO;
 import com.hust.project3.dtos.user.UserRequestDTO;
 import com.hust.project3.entities.User;
@@ -13,9 +14,11 @@ import com.hust.project3.exceptions.NotFoundException;
 import com.hust.project3.repositories.UserRepository;
 import com.hust.project3.security.JwtTokenProvider;
 import com.hust.project3.services.EmailService;
+import com.hust.project3.services.PaymentService;
 import com.hust.project3.services.UserService;
 import com.hust.project3.specification.UserSpecification;
 import com.hust.project3.utils.Constants;
+import com.hust.project3.utils.SecurityUtil;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -33,6 +36,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 import java.util.UUID;
 
 import static com.hust.project3.utils.Constants.messages;
@@ -44,6 +51,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final PaymentService paymentService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -106,6 +114,25 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setStatus(dto.getStatus());
         user.setName(dto.getName());
         return userRepository.save(user);
+    }
+
+    @Override
+    public List<User> getRecentUsers(LocalDate startDate, LocalDate endDate) {
+        LocalDateTime start = startDate.atTime(LocalTime.MIN);
+        LocalDateTime end = endDate.atTime(LocalTime.MAX);
+        return userRepository.findUsersByRegistrationDate(start, end);
+    }
+
+    @Override
+    public User upgradeVip() {
+        User user = userRepository.findByEmail(SecurityUtil.getUserEmail()).get();
+        user.setRole(RoleEnum.VIP_USER.name());
+        return userRepository.save(user);
+    }
+
+    @Override
+    public PaymentDTO.VNPayResponse requestUpgradeVipPayment() {
+        return paymentService.createVipVnPayPayment();
     }
 
     @Override

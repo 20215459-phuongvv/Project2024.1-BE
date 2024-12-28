@@ -8,6 +8,9 @@ import com.hust.project3.exceptions.NotFoundException;
 import jakarta.mail.MessagingException;
 import org.springframework.data.domain.Page;
 
+import java.time.LocalDate;
+import java.util.List;
+
 public interface BorrowBookService {
     Page<BorrowBook> getBorrowingsByUserLogin(String jwt, BorrowBookRequestDTO dto, PagingRequestDTO pagingRequestDTO) throws NotFoundException;
 
@@ -22,4 +25,6 @@ public interface BorrowBookService {
     BorrowBook getBorrowingById(Long id) throws NotFoundException;
 
     BorrowBook updateReturnedBorrowing(Long id) throws NotFoundException, MessagingException;
+
+    List<BorrowBook> getRecentBorrowing(LocalDate startDate, LocalDate endDate);
 }

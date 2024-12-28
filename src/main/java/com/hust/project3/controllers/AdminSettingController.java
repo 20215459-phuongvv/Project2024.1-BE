@@ -23,9 +23,9 @@ public class AdminSettingController {
         return Result.ok(page.getContent(), ResultMeta.of(page));
     }
 
-    @GetMapping("/{id}")
-    public Result getSettingById(@PathVariable("id") Long id) throws NotFoundException {
-        return Result.ok(settingService.getSettingById(id));
+    @GetMapping("/{key}")
+    public Result getSettingByKey(@PathVariable("key") String key) throws NotFoundException {
+        return Result.ok(settingService.getSettingByKey(key));
     }
 
     @PostMapping("/normal-user-limit")
@@ -50,5 +50,20 @@ public class AdminSettingController {
     public Result updateVipUserLimit(@RequestHeader("Authorization") String jwt,
                                         @RequestBody SettingRequestDTO dto) throws NotFoundException {
         return Result.ok(settingService.updateVipUserLimit(jwt, dto));
+    }
+
+    @PutMapping("/monthly-card-price")
+    public Result updateMonthlyCardPrice(@RequestBody SettingRequestDTO dto) {
+        return Result.ok(settingService.updateMonthlyCardPrice(dto));
+    }
+
+    @PutMapping("/yearly-card-price")
+    public Result updateYearlyCardPrice(@RequestBody SettingRequestDTO dto) {
+        return Result.ok(settingService.updateYearlyCardPrice(dto));
+    }
+
+    @PutMapping("/upgrade-vip-price")
+    public Result updateUpgradeVipPrice(@RequestBody SettingRequestDTO dto) {
+        return Result.ok(settingService.updateUpgradeVipPrice(dto));
     }
 }

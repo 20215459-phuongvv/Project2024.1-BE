@@ -6,4 +6,5 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface PaymentService {
     PaymentDTO.VNPayResponse createVnPayPayment(ReadingCardRequestDTO dto);
+    PaymentDTO.VNPayResponse createVipVnPayPayment();
 }
